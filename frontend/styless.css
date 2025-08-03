@@ -453,6 +453,7 @@ body {
     outline: none;
 }
 
+.form-ingreso-container button[type="button"],
 .form-ingreso-container button[type="submit"] {
     margin-top: 20px;
     width: 100%;
@@ -467,6 +468,7 @@ body {
     transition: background-color 0.3s ease;
 }
 
+.form-ingreso-container button[type="button"]:hover,
 .form-ingreso-container button[type="submit"]:hover {
     background-color: #2563eb;
 }

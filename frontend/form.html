@@ -34,7 +34,8 @@
       <label for="imagen">Imagen (archivo opcional):</label>
       <input type="file" id="imagen" name="imagen" accept="image/*" />
 
-      <button type="submit">Enviar</button>
+      <button type="button" id="btnEnviar">Enviar</button>
+
     </form>
 
     <div id="respuestaForm"></div>
@@ -70,45 +71,55 @@
 
 
 
-          </div> <!-- 🔧 Este es el cierre correcto de .data-view-section -->
+          </div> 
 
-      </div> <!-- Cierre de .form-grid -->
+      </div> 
 
-</div>
-  <script>
-    document.getElementById("entradaForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+<script>
+  document.getElementById("btnEnviar").addEventListener("click", async () => {
+    const form = document.getElementById("entradaForm");
 
-      const form = e.target;
-      const formData = new FormData(form);  // crea FormData con todo incluido, texto + archivo
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
-      try {
-        const response = await fetch("http://127.0.0.1:8000/entradas", {
-          method: "POST",
-          body: formData,  // enviar FormData sin headers manuales
-        });
+    const formData = new FormData(form);
 
-        if (!response.ok) {
-          const error = await response.json();
-          document.getElementById("respuestaForm").style.color = "red";
-          document.getElementById("respuestaForm").textContent =
-            "Error: " + (error.detail || "No se pudo crear la entrada");
-          return;
-        }
+    try {
+      const response = await fetch("http://127.0.0.1:8000/entradas", {
+        method: "POST",
+        body: formData,
+      });
 
-        const data = await response.json();
-        document.getElementById("respuestaForm").style.color = "green";
-        document.getElementById("respuestaForm").textContent =
-          "Entrada creada con ID: " + data.entrada.id;
-
-        form.reset();
-      } catch (error) {
+      if (!response.ok) {
+        const error = await response.json();
         document.getElementById("respuestaForm").style.color = "red";
         document.getElementById("respuestaForm").textContent =
-          "Error de red: " + error.message;
+          "Error: " + (error.detail || "No se pudo crear la entrada");
+        return;
       }
-    });
-  </script>
+
+      const data = await response.json();
+      document.getElementById("respuestaForm").style.color = "green";
+      document.getElementById("respuestaForm").textContent =
+        "Entrada creada con ID: " + data.entrada.id;
+
+      form.reset();
+
+      if (typeof fetchEntradas === "function") {
+        fetchEntradas();
+      }
+
+    } catch (error) {
+      document.getElementById("respuestaForm").style.color = "red";
+      document.getElementById("respuestaForm").textContent =
+        "Error de red: " + error.message;
+    }
+  });
+</script>
+
+
   <script src="script.js"></script>
 </body>
 </html>

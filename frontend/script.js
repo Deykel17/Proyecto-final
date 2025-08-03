@@ -32,6 +32,42 @@ async function addCity() {
         cities.push(weatherData);
         cityInput.value = '';
         renderWeatherCards();
+// ------------------------ Faltaba guardadar en la base de datos ------------------------ //
+        // 💾 Guardar en la base de datos
+        try{
+          await fetch(`${API_BASE_URL}/weather`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ciudad: weatherData.name,
+              pais: weatherData.country,
+              temperatura: weatherData.temperature,
+              sensacion_termica: weatherData.feelsLike,
+              temp_min: weatherData.tempMin,
+              temp_max: weatherData.tempMax,
+              humedad: weatherData.humidity,
+              presion: weatherData.pressure,
+              descripcion: weatherData.description,
+              icono: weatherData.icon,
+              nubosidad: weatherData.cloudiness,
+              viento_velocidad: parseFloat(weatherData.windSpeed),
+              viento_direccion: 0,
+              visibilidad: weatherData.visibility * 1000,
+              amanecer: weatherData.sunrise,
+              atardecer: weatherData.sunset,
+              coordenadas: {
+                latitud: weatherData.coordinates.latitud,
+                longitud: weatherData.coordinates.longitud
+                },
+                timestamp: new Date().toISOString()
+              })
+            });
+          }
+        catch (e) {
+          console.warn("⚠️ No se pudo guardar el clima en la base de datos:", e.message);
+        }
+// ------------------------ Fin ------------------------ //
+
         
         // Mostrar mensaje de éxito
         showNotification(`✅ ${weatherData.name} agregada exitosamente`, 'success');

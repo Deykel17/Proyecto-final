@@ -94,3 +94,73 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-07-17 17:46:10
+
+/* New for backups */
+-- Tabla para respaldos climáticos
+--DROP TABLE IF EXISTS `weather_data_backup`;
+CREATE TABLE `weather_data_backup` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `ciudad` text,
+  `pais` text,
+  `temperatura` double DEFAULT NULL,
+  `sensacion_termica` double DEFAULT NULL,
+  `temp_min` double DEFAULT NULL,
+  `temp_max` double DEFAULT NULL,
+  `humedad` int DEFAULT NULL,
+  `presion` int DEFAULT NULL,
+  `descripcion` text,
+  `icono` text,
+  `nubosidad` int DEFAULT NULL,
+  `viento_velocidad` double DEFAULT NULL,
+  `viento_direccion` int DEFAULT NULL,
+  `visibilidad` int DEFAULT NULL,
+  `amanecer` text,
+  `atardecer` text,
+  `latitud` double DEFAULT NULL,
+  `longitud` double DEFAULT NULL,
+  `timestamp` text,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_ciudad_fecha` (`ciudad`(100), `timestamp`(10))  -- Ciudad + día
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+--DROP TABLE IF EXISTS `entradas_backup`;
+CREATE TABLE IF NOT EXISTS `entradas_backup` (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    ciudad VARCHAR(100),
+    clima VARCHAR(100),
+    descripcion TEXT,
+    imagen LONGTEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_dia DATE GENERATED ALWAYS AS (DATE(fecha)) STORED,
+    UNIQUE KEY unique_entrada_dia (nombre, ciudad, clima, fecha_dia)
+);
+
+
+-- Tabla para almacenar datos limpios después de aplicar el pipeline
+CREATE TABLE IF NOT EXISTS weather_data_cleaned (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  ciudad VARCHAR(100),
+  pais VARCHAR(10),
+  descripcion VARCHAR(255),
+  temperatura DOUBLE,
+  viento_clasificacion VARCHAR(20),
+  temperatura_clasificacion VARCHAR(20),
+  visibilidad_clasificacion VARCHAR(20),
+  timestamp DATETIME,
+  UNIQUE KEY unique_ciudad_timestamp (ciudad, timestamp)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE IF NOT EXISTS entradas_cleaned (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    ciudad VARCHAR(100),
+    clima VARCHAR(100),
+    descripcion TEXT,
+    imagen LONGTEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_dia DATE GENERATED ALWAYS AS (DATE(fecha)) STORED,
+    UNIQUE KEY unique_entrada_dia (nombre, ciudad, clima, fecha_dia)
+);

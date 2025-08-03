@@ -7,6 +7,8 @@ import aiohttp
 from sqlalchemy.orm import Session
 from backend.database import conectar_db
 import base64
+from fastapi.responses import JSONResponse
+from pipeline import ejecutar_pipeline
 
 router = APIRouter()
 
@@ -204,4 +206,34 @@ def listar_entradas():
     finally:
         conn.close()
 
+
+@router.post("/ejecutar_pipeline_backup")
+def ejecutar_backup():
+    try:
+        ejecutar_pipeline()
+        return {"message": "✅ Backup ejecutado exitosamente"}
+    except Exception as e:
+        return {"error": str(e)}
+    
+
+@router.post("/api/pipeline/run")
+def ejecutar_pipeline_manualmente():
+    try:
+        ejecutar_pipeline()
+        return JSONResponse(content={"mensaje": "Pipeline ejecutado correctamente"})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+@router.get("/api/cleaned")
+def obtener_datos_limpios():
+    try:
+        conn = conectar_db()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM weather_data_cleaned")
+            datos = cursor.fetchall()
+        return datos
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+    finally:
+        conn.close()
 
