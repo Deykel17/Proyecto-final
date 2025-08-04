@@ -243,6 +243,52 @@ function renderWeatherCards() {
     `).join('');
 }
 
+async function fetchCleanedData() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/cleaned`);
+        if (!response.ok) throw new Error("Error al cargar datos limpios");
+
+        const data = await response.json();
+        renderCleanedWeatherCards(data);
+    } catch (error) {
+        showNotification(`❌ Error cargando datos limpios: ${error.message}`, 'error');
+    }
+}
+
+function renderCleanedWeatherCards(data) {
+    const cleanedGrid = document.getElementById("cleanedWeatherGrid");
+    if (!cleanedGrid) return;
+
+    if (!data || data.length === 0) {
+        cleanedGrid.innerHTML = `<div class="empty-state"><div class="empty-state-text">Sin datos limpios</div></div>`;
+        return;
+    }
+
+    cleanedGrid.innerHTML = data.map(entry => `
+        <div class="weather-card cloudy">
+            <div class="weather-header">
+                <div class="city-info">
+                    <span class="city-name">${entry.ciudad}</span>
+                    <span class="country-tag">${entry.pais}</span>
+                </div>
+            </div>
+            <div class="temperature-section">
+                <div class="temperature">${Math.round(entry.temperatura)}°C</div>
+            </div>
+            <div class="weather-description">${entry.descripcion}</div>
+            <div class="weather-details">
+                <div class="detail-item">💨 Viento: ${entry.viento_clasificacion || '–'}</div>
+                <div class="detail-item">🌡️ Temperatura: ${entry.temperatura_clasificacion || '–'}</div>
+                <div class="detail-item">👁️ Visibilidad: ${entry.visibilidad_clasificacion || '–'}</div>
+            </div>
+            <div class="last-updated">
+                <small>Actualizado: ${new Date(entry.timestamp).toLocaleString()}</small>
+            </div>
+        </div>
+    `).join('');
+}
+
+
 // Función para filtrar ciudades
 function filterCities() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -496,6 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Renderizar inicial (vacío)
     renderWeatherCards();
+    fetchCleanedData();
 });
 
 // Función para manejar el envío del formulario de ingreso de entradas

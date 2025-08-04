@@ -27,11 +27,17 @@ EXTERNAL_API/
 
 ## ⚙️ Requisitos
 
-- Python 3.10 o superior
+- Python 3.11 o superior 
 - MySQL 5.7 o superior
 - Cuenta en OpenWeatherMap
 
 ---
+
+⚠️ **Importante:** asegúrate de estar usando **Python 3.11**, ya que algunas dependencias (como NumPy 2.3.2) no son compatibles con Python 3.10 ni versiones anteriores.
+Puedes verificar tu versión activa con:
+
+```bash
+python --version
 
 ## 🚀 Configuración del entorno
 
