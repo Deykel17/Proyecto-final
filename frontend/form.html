@@ -10,6 +10,56 @@
 
   <!-- estilos personalizados -->
   <link rel="stylesheet" href="styless.css" />
+
+  <style>
+    /* Punto 1: bordes redondeados y sombra suave al card */
+    .card {
+      border-radius: 1rem;
+      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .card:hover {
+      box-shadow: 0 1rem 2rem rgba(0,0,0,0.15);
+    }
+
+    /* Punto 2: más padding y tamaño en inputs y textarea */
+    input.form-control,
+    textarea.form-control {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+    }
+
+    /* Punto 3: fondo muy suave para el card-body */
+    .card-body {
+      background-color: #f9fafb;
+    }
+
+    /* Punto 4: estilo botón enviar verde con sombra */
+    .btn-success {
+      background-color: #28a745;
+      border-color: #28a745;
+      box-shadow: 0 0.25rem 0.5rem rgba(40, 167, 69, 0.4);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .btn-success:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+    }
+
+    /* Punto 6: color y opacidad para placeholders */
+    ::placeholder {
+      color: #adb5bd;
+      opacity: 1;
+    }
+
+    /* Punto 8: foco accesible inputs y textarea */
+    input.form-control:focus,
+    textarea.form-control:focus {
+      border-color: #86b7fe;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+      outline: none;
+    }
+  </style>
 </head>
 <body>
 
@@ -137,5 +187,6 @@
 <script src="script.js"></script>
 </body>
 </html>
+
 
 
