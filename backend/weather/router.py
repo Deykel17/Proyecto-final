@@ -1,7 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query, Form, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from typing import Optional
 from datetime import datetime
-from .model import WeatherResponse, WeatherSimpleResponse, HealthResponse, Entrada
+from .model import WeatherResponse, WeatherSimpleResponse, HealthResponse, Entrada, EntradaCreate
 import asyncio
 import aiohttp
 from sqlalchemy.orm import Session
@@ -148,14 +148,10 @@ def listar_climas():
     finally:
         conn.close()
 
+
+# 🚀 Nuevo endpoint con validaciones automáticas
 @router.post("/entradas")
-async def crear_entrada(
-    nombre: str = Form(...),
-    ciudad: str = Form(...),
-    clima: str = Form(...),
-    descripcion: str = Form(None),
-    imagen: UploadFile = File(None)
-):
+async def crear_entrada(entry: EntradaCreate, imagen: UploadFile = File(None)):
     imagen_str = None
 
     try:
@@ -170,19 +166,22 @@ async def crear_entrada(
                 VALUES (%s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (
-                nombre,
-                ciudad,
-                clima,
-                descripcion,
+                entry.nombre,
+                entry.ciudad,
+                entry.clima,
+                entry.descripcion,
                 imagen_str
             ))
             conn.commit()
-            new_id = cursor.lastrowid  # ✅ Aquí obtienes el ID generado automáticamente
+            new_id = cursor.lastrowid
 
         return {
             "message": "Entrada creada exitosamente",
             "entrada": {
-                "id": new_id
+                "id": new_id,
+                "nombre": entry.nombre,
+                "ciudad": entry.ciudad,
+                "clima": entry.clima
             }
         }
 
@@ -192,14 +191,13 @@ async def crear_entrada(
         conn.close()
 
 
-
 @router.get("/entradas")
 def listar_entradas():
     try:
         conn = conectar_db()
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM entradas")
-            rows = cursor.fetchall()  # Ya es una lista de diccionarios
+            rows = cursor.fetchall()
         return rows
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
