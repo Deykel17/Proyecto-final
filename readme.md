@@ -123,3 +123,62 @@ http://127.0.0.1:8000/docs
 ## 🧊 Autor
 
 Proyecto grupal desarrollado para el curso de Aplicaciones Web.
+
+sequenceDiagram
+    autonumber
+    actor U as Usuario (Navegador)
+    participant FE as Frontend (DigitalOcean App Platform - estático)
+    participant BE as Backend (FastAPI+Uvicorn en Droplet/App Platform)
+    participant DB as MySQL (DigitalOcean Managed DB)
+    participant OWM as OpenWeatherMap (API externa)
+    participant P as Pipeline (cron/worker en DO)
+
+    U->>FE: Solicita página / UI
+    U->>FE: Pide clima (click/submit)
+    FE->>BE: GET /weather?city=XYZ (HTTPS)
+    BE->>DB: Consulta último registro (SQL)
+    alt datos recientes
+        DB-->>BE: Registros recientes
+        BE-->>FE: JSON con clima (cache/DB)
+    else no hay datos o expirados
+        BE->>OWM: Request clima actual (API key)
+        OWM-->>BE: Respuesta clima
+        BE->>DB: Insert/Update registro
+        BE-->>FE: JSON con clima (OWM)
+    end
+
+    Note over P,DB: Tareas programadas
+    P->>OWM: Pull periódico (cada X min)
+    OWM-->>P: Respuesta clima
+    P->>DB: Inserta/actualiza clima
+
+graph TD
+    subgraph DigitalOcean
+      FE[Frontend (App Platform estático)\nHTML/CSS/JS]
+      BE[Backend (FastAPI+Uvicorn)\nDroplet o App Platform]
+      DB[(Managed MySQL)\nBackups + VPC]
+      P[Pipeline (cron/worker)\nApp Platform Worker o crontab en Droplet]
+      ENV[[.env / Variables en DO]\nDB_HOST, DB_USER, DB_PASS, OWM_API_KEY, CORS_ORIGINS]
+    end
+
+    OWM[OpenWeatherMap\n(API Externa)]
+
+    %% Dependencias
+    FE -->|HTTPS /weather| BE
+    BE -->|SQL read/write (VPC)| DB
+    P -->|SQL| DB
+    P -->|HTTP| BE
+
+    BE <-->|HTTPS| OWM
+    P -->|HTTPS| OWM
+
+    ENV -.-> BE
+    ENV -.-> P
+
+    %% estilos
+    classDef comp fill:#eef,stroke:#333,stroke-width:1px;
+    classDef data fill:#e8fff2,stroke:#333,stroke-width:1px;
+    classDef ext fill:#ffe,stroke:#333,stroke-width:1px,stroke-dasharray: 4 2;
+    class FE,BE,P,ENV comp;
+    class DB data;
+    class OWM ext;
