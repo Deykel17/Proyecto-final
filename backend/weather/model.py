@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field
 from typing import Dict, Optional
 from backend.database import Base  
 
@@ -18,21 +18,11 @@ class Entrada(Base):
 # Modelos Pydantic para validación y documentación
 
 class EntradaCreate(BaseModel):
-    nombre: constr(strip_whitespace=True, min_length=2, max_length=100) = Field(
-        ..., description="Nombre de la persona, entre 2 y 100 caracteres"
-    )
-    ciudad: constr(strip_whitespace=True, min_length=2, max_length=100) = Field(
-        ..., description="Ciudad asociada a la entrada"
-    )
-    clima: constr(strip_whitespace=True, min_length=2, max_length=50) = Field(
-        ..., description="Tipo de clima (ej. soleado, lluvioso)"
-    )
-    descripcion: Optional[constr(strip_whitespace=True, max_length=500)] = Field(
-        None, description="Descripción opcional, máximo 500 caracteres"
-    )
-    imagen: Optional[str] = Field(
-        None, description="URL o ruta de la imagen (opcional)"
-    )
+    nombre: str = Field(..., min_length=2, max_length=100, description="Nombre entre 2 y 100 caracteres")
+    ciudad: str = Field(..., min_length=2, max_length=100, description="Ciudad entre 2 y 100 caracteres")
+    clima: str = Field(..., min_length=2, max_length=50, description="Clima entre 2 y 50 caracteres")
+    descripcion: Optional[str] = Field(None, max_length=500, description="Descripción opcional, máximo 500 caracteres")
+    imagen: Optional[str] = Field(None, description="URL o base64 de la imagen (opcional)")
 
 class WeatherResponse(BaseModel):
     ciudad: str
