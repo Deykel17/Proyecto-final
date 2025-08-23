@@ -1,10 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException
 from typing import Optional
 from datetime import datetime
-from .model import WeatherResponse, WeatherSimpleResponse, HealthResponse, Entrada, EntradaCreate
+from .model import WeatherResponse, WeatherSimpleResponse, HealthResponse, EntradaCreate
 import asyncio
 import aiohttp
-from sqlalchemy.orm import Session
 from backend.database import conectar_db
 import base64
 from fastapi.responses import JSONResponse
@@ -12,7 +11,9 @@ from pipeline import ejecutar_pipeline
 
 router = APIRouter()
 
+# ===========================
 # Conexion al API
+# ===========================
 class WeatherAPI:
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -61,6 +62,9 @@ class WeatherAPI:
 # Instancia con tu API key
 weather_api = WeatherAPI(api_key="a54fc02404ab14f7755566fe1a2cafd8")
 
+# ===========================
+# Endpoints principales
+# ===========================
 @router.get("/")
 async def root():
     return {
@@ -94,6 +98,9 @@ async def health():
         message="API funcionando correctamente"
     )
 
+# ===========================
+# Manejo de clima
+# ===========================
 @router.post("/weather")
 def guardar_clima(entry: WeatherResponse):
     try:
@@ -148,17 +155,12 @@ def listar_climas():
     finally:
         conn.close()
 
-
-# 🚀 Nuevo endpoint con validaciones automáticas
+# ===========================
+# Manejo de entradas
+# ===========================
 @router.post("/entradas")
-async def crear_entrada(entry: EntradaCreate, imagen: UploadFile = File(None)):
-    imagen_str = None
-
+async def crear_entrada(data: EntradaCreate):
     try:
-        if imagen:
-            contenido = await imagen.read()
-            imagen_str = base64.b64encode(contenido).decode("utf-8")
-
         conn = conectar_db()
         with conn.cursor() as cursor:
             sql = """
@@ -166,11 +168,11 @@ async def crear_entrada(entry: EntradaCreate, imagen: UploadFile = File(None)):
                 VALUES (%s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (
-                entry.nombre,
-                entry.ciudad,
-                entry.clima,
-                entry.descripcion,
-                imagen_str
+                data.nombre,
+                data.ciudad,
+                data.clima,
+                data.descripcion,
+                data.imagen  # si viene base64 o URL ya validada por Pydantic
             ))
             conn.commit()
             new_id = cursor.lastrowid
@@ -179,9 +181,9 @@ async def crear_entrada(entry: EntradaCreate, imagen: UploadFile = File(None)):
             "message": "Entrada creada exitosamente",
             "entrada": {
                 "id": new_id,
-                "nombre": entry.nombre,
-                "ciudad": entry.ciudad,
-                "clima": entry.clima
+                "nombre": data.nombre,
+                "ciudad": data.ciudad,
+                "clima": data.clima
             }
         }
 
@@ -189,7 +191,6 @@ async def crear_entrada(entry: EntradaCreate, imagen: UploadFile = File(None)):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         conn.close()
-
 
 @router.get("/entradas")
 def listar_entradas():
@@ -204,7 +205,9 @@ def listar_entradas():
     finally:
         conn.close()
 
-
+# ===========================
+# Pipeline
+# ===========================
 @router.post("/ejecutar_pipeline_backup")
 def ejecutar_backup():
     try:
@@ -212,7 +215,6 @@ def ejecutar_backup():
         return {"message": "✅ Backup ejecutado exitosamente"}
     except Exception as e:
         return {"error": str(e)}
-    
 
 @router.post("/api/pipeline/run")
 def ejecutar_pipeline_manualmente():
@@ -234,4 +236,5 @@ def obtener_datos_limpios():
         return JSONResponse(content={"error": str(e)}, status_code=500)
     finally:
         conn.close()
+
 
